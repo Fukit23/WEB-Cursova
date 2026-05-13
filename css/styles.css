@@ -53,11 +53,44 @@ nav a {
 }
 .app-card {
     background: white;
+    display: flex;
+    flex-direction: column;
     border-radius: 8px;
     padding: 20px;
+    height: 420px;
     width: 250px;
     box-shadow: 0 4px 6px rgba(0,0,0,0.1);
     text-align: center;
+    align-items: center;
+}
+.app-card p {
+    width: 100%;
+    flex-grow: 1;
+    overflow-y: auto;
+    margin-bottom: 15px;
+    text-align: center;
+    padding-right: 5px;
+}
+
+.app-card p::-webkit-scrollbar {
+    width: 6px;
+}
+
+.app-card p::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.app-card p::-webkit-scrollbar-thumb {
+    background: #ccc;
+    border-radius: 4px;
+}
+
+.app-card p::-webkit-scrollbar-thumb:hover {
+    background: #999;
+}
+
+.app-card .btn-main {
+    margin-top: auto;
 }
 .app-card img {
     width: 80px;

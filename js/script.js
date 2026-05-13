@@ -1,5 +1,6 @@
 let cropper = null;
 let isLoggedIn = false;
+let allApps = [];
 
 function getIconUrl(id) {
     return `https://picsum.photos/id/${id}/80/80`;
@@ -10,17 +11,17 @@ async function fetchApps() {
         const res = await fetch('php/get_apps.php');
         if (!res.ok) throw new Error('Network error');
         
-        const apps = await res.json();
+        allApps = await res.json();
         const list = document.getElementById('app-list');
         
-        list.innerHTML = apps.map(app => `
+        list.innerHTML = allApps.map(app => `
             <div class="app-card">
                 <img src="${app.icon_path ? app.icon_path : getIconUrl(app.icon_id)}" alt="${app.name}">
                 <h3>${app.name}</h3>
                 <p>${app.description}</p>
                 <div class="version-badge">Версія: ${app.type}</div>
                 <div class="price-tag">${app.price}₴</div>
-                <button class="btn-main" onclick="handleDownload('${app.download_link}', ${app.id})"')">
+                <button class="btn-main" onclick="handleDownload('${app.download_link}', ${app.id})">
                     Завантажити
                 </button>
             </div>
@@ -210,10 +211,42 @@ async function showHistory() {
 
     if (data.uploads && data.uploads.length > 0) {
         uSection.style.display = 'block';
-        uList.innerHTML = data.uploads.map(u => `<li>${u.name}</li>`).join('');
+        uList.innerHTML = data.uploads.map(u => `
+            <li style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; padding-bottom:5px; border-bottom:1px solid #ccc;">
+                <span>${u.name}</span>
+                <div>
+                    <button class="btn-main" onclick="openEditModal(${u.id})" style="padding:5px 10px; font-size:12px; margin-right:5px;">Редагувати</button>
+                    <button class="btn-logout" onclick="deleteApp(${u.id})" style="padding:5px 10px; font-size:12px;">Видалити</button>
+                </div>
+            </li>
+        `).join('');
     } else {
         uSection.style.display = 'none';
     }
 
     openModal('historyModal');
+}
+
+function openEditModal(id) {
+    const app = allApps.find(a => a.id == id);
+    if (!app) return;
+    
+    document.getElementById('edit_app_id').value = app.id;
+    document.getElementById('edit_name').value = app.name;
+    document.getElementById('edit_description').value = app.description;
+    document.getElementById('edit_price').value = app.price;
+    document.getElementById('edit_age').value = app.age_category;
+    document.getElementById('edit_category').value = app.category;
+    
+    closeModals();
+    openModal('editAppModal');
+}
+
+async function deleteApp(id) {
+    if (!confirm('Ви дійсно хочете видалити цю програму?')) return;
+    const fd = new FormData();
+    fd.append('id', id);
+    await fetch('php/delete_app.php', { method: 'POST', body: fd });
+    await fetchApps();
+    showHistory();
 }

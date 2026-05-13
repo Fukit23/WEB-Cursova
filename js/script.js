@@ -20,7 +20,7 @@ async function fetchApps() {
                 <p>${app.description}</p>
                 <div class="version-badge">Версія: ${app.type}</div>
                 <div class="price-tag">${app.price}₴</div>
-                <button class="btn-main" onclick="handleDownload('${app.download_link}')">
+                <button class="btn-main" onclick="handleDownload('${app.download_link}', ${app.id})"')">
                     Завантажити
                 </button>
             </div>
@@ -30,8 +30,11 @@ async function fetchApps() {
     }
 }
 
-function handleDownload(link) {
+async function handleDownload(link, appId) {
     if (isLoggedIn) {
+        const fd = new FormData();
+        fd.append('app_id', appId);
+        await fetch('php/record_download.php', { method: 'POST', body: fd });
         window.open(link, '_blank');
     } else {
         openModal('loginModal');
@@ -43,18 +46,14 @@ async function checkAuth() {
         const res = await fetch('php/check_auth.php');
         const data = await res.json();
         const authMenu = document.getElementById('auth-menu');
-
         isLoggedIn = data.logged_in;
 
         if (data.logged_in) {
-            let publisherBtn = '';
-            if (data.role === 'publisher') {
-                publisherBtn = `<button class="btn-register" onclick="openModal('addAppModal')" style="margin-right:15px;">+ Додати програму</button>`;
-            }
-            
+            let publisherBtn = data.role === 'publisher' ? `<button class="btn-register" onclick="openModal('addAppModal')" style="margin-right:10px;">+ Додати</button>` : '';
             authMenu.innerHTML = `
                 ${publisherBtn}
-                <a href="#">Акаунт (${data.username})</a>
+                <button class="btn-main" onclick="showHistory()" style="margin-right:10px;">Історія</button>
+                <a href="#">${data.username}</a>
                 <button class="btn-logout" onclick="window.location.href='php/logout.php'">Вийти</button>
             `;
         } else {
@@ -198,3 +197,23 @@ document.addEventListener('DOMContentLoaded', () => {
     fetchApps();
     checkAuth();
 });
+
+async function showHistory() {
+    const res = await fetch('php/get_history.php');
+    const data = await res.json();
+    
+    const dList = document.getElementById('downloads-list');
+    const uList = document.getElementById('uploads-list');
+    const uSection = document.getElementById('publisher-uploads');
+
+    dList.innerHTML = data.downloads.map(d => `<li>${d.name} (${d.download_date})</li>`).join('') || '<li>Ще немає завантажень</li>';
+
+    if (data.uploads && data.uploads.length > 0) {
+        uSection.style.display = 'block';
+        uList.innerHTML = data.uploads.map(u => `<li>${u.name}</li>`).join('');
+    } else {
+        uSection.style.display = 'none';
+    }
+
+    openModal('historyModal');
+}

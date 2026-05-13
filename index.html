@@ -107,6 +107,21 @@
     <div id="add_message" style="margin-top:10px; color:red;"></div>
 </div>
 
+<div class="modal" id="historyModal">
+    <div class="modal-close" onclick="closeModals()">✖</div>
+    <h2>Історія</h2>
+    <div id="history-content">
+        <div id="user-downloads">
+            <h3>Ваші завантаження</h3>
+            <ul id="downloads-list"></ul>
+        </div>
+        <div id="publisher-uploads" style="display:none; margin-top:20px;">
+            <h3>Ваші опубліковані програми</h3>
+            <ul id="uploads-list"></ul>
+        </div>
+    </div>
+</div>
+
 <script src="js/script.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
 

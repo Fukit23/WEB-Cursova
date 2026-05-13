@@ -14,6 +14,7 @@ $description = $_POST['description'] ?? '';
 $category = $_POST['category'] ?? 'Games';
 $age_category = $_POST['age_category'] ?? '0+';
 $price = $_POST['price'] ?? 0;
+$user_id = $_SESSION['user_id'];
 
 $pub_name = preg_replace('/[^a-zA-Z0-9_-]/', '_', $_SESSION['username']);
 $safe_name = preg_replace('/[^a-zA-Z0-9_-]/', '_', $name);
@@ -26,15 +27,10 @@ if (!file_exists($icon_dir)) mkdir($icon_dir, 0777, true);
 if (!file_exists($file_dir)) mkdir($file_dir, 0777, true);
 
 $icon_path = '';
-if (isset($_FILES['icon'])) {
-    if ($_FILES['icon']['error'] === 0) {
-        $i_name = time() . '_' . $_FILES['icon']['name'];
-        move_uploaded_file($_FILES['icon']['tmp_name'], $icon_dir . $i_name);
-        $icon_path = 'uploads/icons/' . $dir_name . '/' . $i_name;
-    } elseif ($_FILES['icon']['error'] === 1) {
-        echo json_encode(['status' => 'error', 'message' => 'Іконка занадто велика (ліміт сервера).']);
-        exit;
-    }
+if (isset($_FILES['icon']) && $_FILES['icon']['error'] === 0) {
+    $i_name = time() . '_' . $_FILES['icon']['name'];
+    move_uploaded_file($_FILES['icon']['tmp_name'], $icon_dir . $i_name);
+    $icon_path = 'uploads/icons/' . $dir_name . '/' . $i_name;
 }
 
 $app_path = '';
@@ -44,8 +40,8 @@ if (isset($_FILES['app_file']) && $_FILES['app_file']['error'] === 0) {
     $app_path = 'uploads/files/' . $dir_name . '/' . $a_name;
 }
 
-$stmt1 = $conn->prepare("INSERT INTO apps (name, description, icon_path, category, age_category) VALUES (?, ?, ?, ?, ?)");
-$stmt1->bind_param("sssss", $name, $description, $icon_path, $category, $age_category);
+$stmt1 = $conn->prepare("INSERT INTO apps (name, description, icon_path, category, age_category, publisher_id) VALUES (?, ?, ?, ?, ?, ?)");
+$stmt1->bind_param("sssssi", $name, $description, $icon_path, $category, $age_category, $user_id);
 $stmt1->execute();
 $app_id = $stmt1->insert_id;
 $stmt1->close();
@@ -57,6 +53,5 @@ $stmt2->execute();
 $stmt2->close();
 
 $conn->close();
-
 echo json_encode(['status' => 'success']);
 ?>

@@ -1,4 +1,5 @@
 let cropper = null;
+let isLoggedIn = false;
 
 function getIconUrl(id) {
     return `https://picsum.photos/id/${id}/80/80`;
@@ -19,7 +20,7 @@ async function fetchApps() {
                 <p>${app.description}</p>
                 <div class="version-badge">Версія: ${app.type}</div>
                 <div class="price-tag">${app.price}₴</div>
-                <button class="btn-main" onclick="window.open('${app.download_link}', '_blank')">
+                <button class="btn-main" onclick="handleDownload('${app.download_link}')">
                     Завантажити
                 </button>
             </div>
@@ -29,11 +30,21 @@ async function fetchApps() {
     }
 }
 
+function handleDownload(link) {
+    if (isLoggedIn) {
+        window.open(link, '_blank');
+    } else {
+        openModal('loginModal');
+    }
+}
+
 async function checkAuth() {
     try {
         const res = await fetch('php/check_auth.php');
         const data = await res.json();
         const authMenu = document.getElementById('auth-menu');
+
+        isLoggedIn = data.logged_in;
 
         if (data.logged_in) {
             let publisherBtn = '';

@@ -18,6 +18,7 @@ async function fetchApps() {
             <div class="app-card">
                 <img src="${app.icon_path ? app.icon_path : getIconUrl(app.icon_id)}" alt="${app.name}">
                 <h3>${app.name}</h3>
+                <span style="font-size: 13px; color: #777; margin-top: -10px; margin-bottom: 10px;">Видавець: ${app.publisher_name ? app.publisher_name : 'Невідомий'}</span>
                 <p>${app.description}</p>
                 <div class="version-badge">Версія: ${app.type}</div>
                 <div class="price-tag">${app.price}₴</div>
@@ -50,7 +51,7 @@ async function checkAuth() {
         isLoggedIn = data.logged_in;
 
         if (data.logged_in) {
-            let publisherBtn = data.role === 'publisher' ? `<button class="btn-register" onclick="openModal('addAppModal')" style="margin-right:10px;">+ Додати</button>` : '';
+            let publisherBtn = data.role === 'publisher' ? `<button class="btn-register" onclick="openModal('addAppModal')" style="margin-right:10px;">Додати програму</button>` : '';
             authMenu.innerHTML = `
                 ${publisherBtn}
                 <button class="btn-main" onclick="showHistory()" style="margin-right:10px;">Історія</button>
@@ -174,7 +175,8 @@ document.getElementById('addAppForm').addEventListener('submit', function(e) {
         formData.append('price', document.getElementById('add_price').value);
         formData.append('age_category', document.getElementById('add_age').value);
         formData.append('category', document.getElementById('add_category').value);
-        
+        formData.append('version', document.getElementById('add_version').value);
+
         formData.append('icon', blob, 'icon.png');
         formData.append('app_file', document.getElementById('add_app_file').files[0]);
 

@@ -46,9 +46,9 @@ $stmt1->execute();
 $app_id = $stmt1->insert_id;
 $stmt1->close();
 
-$type = 'official';
+$version = $_POST['version'] ?? '1.0.0';
 $stmt2 = $conn->prepare("INSERT INTO versions (app_id, type, price, download_link) VALUES (?, ?, ?, ?)");
-$stmt2->bind_param("isds", $app_id, $type, $price, $app_path);
+$stmt2->bind_param("isds", $app_id, $version, $price, $app_path);
 $stmt2->execute();
 $stmt2->close();
 

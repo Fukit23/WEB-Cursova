@@ -51,6 +51,8 @@ CREATE TABLE downloads (
 
 ALTER TABLE apps ADD COLUMN publisher_id INT;
 
+ALTER TABLE versions MODIFY COLUMN type VARCHAR(50);
+
 DELETE FROM apps WHERE id='1';
 
 SELECT *

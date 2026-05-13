@@ -40,6 +40,17 @@
     <div class="auth-menu" id="auth-menu"></div>
 </header>
 
+<div style="text-align: center; margin: 20px 0;">
+    <select id="categoryFilter" onchange="filterApps()" style="padding: 10px; border-radius: 5px; font-size: 16px; border: 1px solid #ccc; cursor: pointer;">
+        <option value="All">Всі категорії</option>
+        <option value="Games">Ігри</option>
+        <option value="Tools">Утиліти</option>
+        <option value="Education">Освіта</option>
+        <option value="Productivity">Продуктивність</option>
+        <option value="Lifestyle">Стиль життя</option>
+    </select>
+</div>
+
 <main class="container" id="app-list"></main>
 
 <div class="overlay" id="overlay" onclick="closeModals()"></div>
@@ -91,6 +102,10 @@
         <select id="add_category" required>
             <option value="Games">Ігри</option>
             <option value="Tools">Утиліти</option>
+            <option value="Education">Освіта</option>
+            <option value="Productivity">Продуктивність</option>
+            <option value="Lifestyle">Стиль життя</option>
+        </select>
         </select>
         <label>Іконка програми:</label>
         <input type="file" id="add_icon" accept="image/*" required>
@@ -132,6 +147,10 @@
         <select id="edit_category" required>
             <option value="Games">Ігри</option>
             <option value="Tools">Утиліти</option>
+            <option value="Education">Освіта</option>
+            <option value="Productivity">Продуктивність</option>
+            <option value="Lifestyle">Стиль життя</option>
+        </select>
         </select>
         <button type="submit">Зберегти зміни</button>
     </form>

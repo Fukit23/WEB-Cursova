@@ -12,23 +12,43 @@ async function fetchApps() {
         if (!res.ok) throw new Error('Network error');
         
         allApps = await res.json();
-        const list = document.getElementById('app-list');
-        
-        list.innerHTML = allApps.map(app => `
-            <div class="app-card">
-                <img src="${app.icon_path ? app.icon_path : getIconUrl(app.icon_id)}" alt="${app.name}">
-                <h3>${app.name}</h3>
-                <span style="font-size: 13px; color: #777; margin-top: -10px; margin-bottom: 10px;">Видавець: ${app.publisher_name ? app.publisher_name : 'Невідомий'}</span>
-                <p>${app.description}</p>
-                <div class="version-badge">Версія: ${app.type}</div>
-                <div class="price-tag">${app.price}₴</div>
-                <button class="btn-main" onclick="handleDownload('${app.download_link}', ${app.id})">
-                    Завантажити
-                </button>
-            </div>
-        `).join('');
+        filterApps();
     } catch (e) {
         document.getElementById('app-list').innerHTML = '<p>Помилка завантаження.</p>';
+    }
+}
+
+function renderApps(appsToRender) {
+    const list = document.getElementById('app-list');
+    
+    if (appsToRender.length === 0) {
+        list.innerHTML = '<p style="width:100%; text-align:center; font-size:18px;">Програм у цій категорії поки немає.</p>';
+        return;
+    }
+    
+    list.innerHTML = appsToRender.map(app => `
+        <div class="app-card">
+            <img src="${app.icon_path ? app.icon_path : getIconUrl(app.icon_id)}" alt="${app.name}">
+            <h3>${app.name}</h3>
+            <span style="font-size: 13px; color: #777; margin-top: -10px; margin-bottom: 10px;">Від: ${app.publisher_name ? app.publisher_name : 'Невідомий'}</span>
+            <p>${app.description}</p>
+            <div class="version-badge">Версія: ${app.type}</div>
+            <div class="price-tag">${app.price}₴</div>
+            <button class="btn-main" onclick="handleDownload('${app.download_link}', ${app.id})">
+                Завантажити
+            </button>
+        </div>
+    `).join('');
+}
+
+function filterApps() {
+    const selectedCategory = document.getElementById('categoryFilter').value;
+    
+    if (selectedCategory === 'All') {
+        renderApps(allApps);
+    } else {
+        const filtered = allApps.filter(app => app.category === selectedCategory);
+        renderApps(filtered);
     }
 }
 
@@ -252,3 +272,29 @@ async function deleteApp(id) {
     await fetchApps();
     showHistory();
 }
+
+document.getElementById('editAppForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const fd = new FormData();
+    fd.append('id', document.getElementById('edit_app_id').value);
+    fd.append('name', document.getElementById('edit_name').value);
+    fd.append('description', document.getElementById('edit_description').value);
+    fd.append('price', document.getElementById('edit_price').value);
+    fd.append('age_category', document.getElementById('edit_age').value);
+    fd.append('category', document.getElementById('edit_category').value);
+
+    try {
+        const res = await fetch('php/edit_app.php', { method: 'POST', body: fd });
+        const data = await res.json();
+        
+        if (data.status === 'success') {
+            closeModals();
+            await fetchApps();
+            showHistory();
+        } else {
+            alert('Помилка збереження: ' + data.message);
+        }
+    } catch (err) {
+        alert('Помилка сервера. Відкрий консоль (F12).');
+    }
+});

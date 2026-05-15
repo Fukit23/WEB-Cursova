@@ -41,15 +41,44 @@ function renderApps(appsToRender) {
     `).join('');
 }
 
-function filterApps() {
-    const selectedCategory = document.getElementById('categoryFilter').value;
+let currentSearchScope = 'all';
+
+function setSearchScope(scope) {
+    currentSearchScope = scope;
     
-    if (selectedCategory === 'All') {
-        renderApps(allApps);
-    } else {
-        const filtered = allApps.filter(app => app.category === selectedCategory);
-        renderApps(filtered);
-    }
+    document.querySelectorAll('.search-tab').forEach(tab => {
+        tab.classList.remove('active-tab');
+    });
+    
+    document.querySelector(`.search-tab[data-scope="${scope}"]`).classList.add('active-tab');
+    
+    filterApps();
+}
+
+function filterApps() {
+    const catOpt = document.getElementById('categoryFilter').value;
+    const textOpt = document.getElementById('searchInput').value.toLowerCase();
+    
+    const filtered = allApps.filter(app => {
+        const matchCat = catOpt === 'All' || app.category === catOpt;
+        
+        const appName = app.name ? app.name.toLowerCase() : '';
+        const pubName = app.publisher_name ? app.publisher_name.toLowerCase() : '';
+        
+        let matchText = false;
+        
+        if (currentSearchScope === 'all') {
+            matchText = appName.includes(textOpt) || pubName.includes(textOpt);
+        } else if (currentSearchScope === 'name') {
+            matchText = appName.includes(textOpt);
+        } else if (currentSearchScope === 'publisher') {
+            matchText = pubName.includes(textOpt);
+        }
+        
+        return matchCat && matchText;
+    });
+    
+    renderApps(filtered);
 }
 
 async function handleDownload(link, appId) {

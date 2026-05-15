@@ -40,15 +40,25 @@
     <div class="auth-menu" id="auth-menu"></div>
 </header>
 
-<div style="text-align: center; margin: 20px 0;">
-    <select id="categoryFilter" onchange="filterApps()" style="padding: 10px; border-radius: 5px; font-size: 16px; border: 1px solid #ccc; cursor: pointer;">
-        <option value="All">Всі категорії</option>
-        <option value="Games">Ігри</option>
-        <option value="Tools">Утиліти</option>
-        <option value="Education">Освіта</option>
-        <option value="Productivity">Продуктивність</option>
-        <option value="Lifestyle">Стиль життя</option>
-    </select>
+<div style="text-align: center; margin: 20px 0; display: flex; flex-direction: column; align-items: center; gap: 15px;">
+    <div style="display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;">
+        <input type="text" id="searchInput" oninput="filterApps()" placeholder="Пошук..." style="padding: 10px; border-radius: 5px; font-size: 16px; border: 1px solid #ccc; width: 300px;">
+        
+        <select id="categoryFilter" onchange="filterApps()" style="padding: 10px; border-radius: 5px; font-size: 16px; border: 1px solid #ccc; cursor: pointer;">
+            <option value="All">Всі категорії</option>
+            <option value="Games">Ігри</option>
+            <option value="Tools">Утиліти</option>
+            <option value="Education">Освіта</option>
+            <option value="Productivity">Продуктивність</option>
+            <option value="Lifestyle">Стиль життя</option>
+        </select>
+    </div>
+    
+    <div id="searchTabs" style="display: flex; gap: 20px; font-size: 14px; font-weight: bold; color: #777;">
+        <span class="search-tab active-tab" onclick="setSearchScope('all')" data-scope="all">Скрізь</span>
+        <span class="search-tab" onclick="setSearchScope('name')" data-scope="name">За назвою</span>
+        <span class="search-tab" onclick="setSearchScope('publisher')" data-scope="publisher">За видавцем</span>
+    </div>
 </div>
 
 <main class="container" id="app-list"></main>

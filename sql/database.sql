@@ -53,6 +53,17 @@ ALTER TABLE apps ADD COLUMN publisher_id INT;
 
 ALTER TABLE versions MODIFY COLUMN type VARCHAR(50);
 
+ALTER TABLE apps MODIFY COLUMN category VARCHAR(50);
+
+CREATE TABLE reviews (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    app_id INT NOT NULL,
+    rating INT NOT NULL CHECK(rating >= 1 AND rating <= 5),
+    comment TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 DELETE FROM apps WHERE id='1';
 
 SELECT *

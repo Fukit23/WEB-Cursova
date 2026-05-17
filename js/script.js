@@ -1,57 +1,33 @@
 let cropper = null;
 let isLoggedIn = false;
 let allApps = [];
+let currentSearchScope = 'all';
+let currentSortBy = 'date';
+let currentSortOrder = 'desc';
 
 function getIconUrl(id) {
     return `https://picsum.photos/id/${id}/80/80`;
 }
 
-async function fetchApps() {
-    try {
-        const res = await fetch('php/get_apps.php');
-        if (!res.ok) throw new Error('Network error');
-        
-        allApps = await res.json();
-        filterApps();
-    } catch (e) {
-        document.getElementById('app-list').innerHTML = '<p>Помилка завантаження.</p>';
-    }
-}
-
-function renderApps(appsToRender) {
-    const list = document.getElementById('app-list');
-    
-    if (appsToRender.length === 0) {
-        list.innerHTML = '<p style="width:100%; text-align:center; font-size:18px;">Програм у цій категорії поки немає.</p>';
-        return;
-    }
-    
-    list.innerHTML = appsToRender.map(app => `
-        <div class="app-card">
-            <img src="${app.icon_path ? app.icon_path : getIconUrl(app.icon_id)}" alt="${app.name}">
-            <h3>${app.name}</h3>
-            <span style="font-size: 13px; color: #777; margin-top: -10px; margin-bottom: 10px;">Від: ${app.publisher_name ? app.publisher_name : 'Невідомий'}</span>
-            <p>${app.description}</p>
-            <div class="version-badge">Версія: ${app.type}</div>
-            <div class="price-tag">${app.price}₴</div>
-            <button class="btn-main" onclick="handleDownload('${app.download_link}', ${app.id})">
-                Завантажити
-            </button>
-        </div>
-    `).join('');
-}
-
-let currentSearchScope = 'all';
-
 function setSearchScope(scope) {
     currentSearchScope = scope;
-    
-    document.querySelectorAll('.search-tab').forEach(tab => {
-        tab.classList.remove('active-tab');
-    });
-    
+    document.querySelectorAll('.search-tab').forEach(t => t.classList.remove('active-tab'));
     document.querySelector(`.search-tab[data-scope="${scope}"]`).classList.add('active-tab');
-    
+    filterApps();
+}
+
+function setSortBy(sort) {
+    currentSortBy = sort;
+    document.querySelectorAll('.sort-tab').forEach(t => t.classList.remove('active-tab'));
+    document.querySelector(`.sort-tab[data-sort="${sort}"]`).classList.add('active-tab');
+    document.getElementById('orderRow').style.display = 'flex';
+    filterApps();
+}
+
+function setSortOrder(order) {
+    currentSortOrder = order;
+    document.querySelectorAll('.order-tab').forEach(t => t.classList.remove('active-tab'));
+    document.querySelector(`.order-tab[data-order="${order}"]`).classList.add('active-tab');
     filterApps();
 }
 
@@ -59,12 +35,10 @@ function filterApps() {
     const catOpt = document.getElementById('categoryFilter').value;
     const textOpt = document.getElementById('searchInput').value.toLowerCase();
     
-    const filtered = allApps.filter(app => {
+    let filtered = allApps.filter(app => {
         const matchCat = catOpt === 'All' || app.category === catOpt;
-        
         const appName = app.name ? app.name.toLowerCase() : '';
         const pubName = app.publisher_name ? app.publisher_name.toLowerCase() : '';
-        
         let matchText = false;
         
         if (currentSearchScope === 'all') {
@@ -77,16 +51,80 @@ function filterApps() {
         
         return matchCat && matchText;
     });
+
+    if (currentSortBy === 'date') {
+        filtered.sort((a, b) => {
+            const idA = parseInt(a.id) || 0;
+            const idB = parseInt(b.id) || 0;
+            return currentSortOrder === 'desc' ? idB - idA : idA - idB;
+        });
+    } else if (currentSortBy === 'rating') {
+        filtered.sort((a, b) => {
+            const valA = parseFloat(a.avg_rating) || 0;
+            const valB = parseFloat(b.avg_rating) || 0;
+            return currentSortOrder === 'desc' ? valB - valA : valA - valB;
+        });
+    } else if (currentSortBy === 'price') {
+        filtered.sort((a, b) => {
+            const valA = parseFloat(a.price) || 0;
+            const valB = parseFloat(b.price) || 0;
+            return currentSortOrder === 'desc' ? valB - valA : valA - valB;
+        });
+    } else if (currentSortBy === 'name') {
+        filtered.sort((a, b) => {
+            const nameA = a.name ? a.name.toLowerCase() : '';
+            const nameB = b.name ? b.name.toLowerCase() : '';
+            return currentSortOrder === 'desc' ? nameB.localeCompare(nameA) : nameA.localeCompare(nameB);
+        });
+    } else if (currentSortBy === 'publisher') {
+        filtered.sort((a, b) => {
+            const pubA = a.publisher_name ? a.publisher_name.toLowerCase() : '';
+            const pubB = b.publisher_name ? b.publisher_name.toLowerCase() : '';
+            return currentSortOrder === 'desc' ? pubB.localeCompare(pubA) : pubA.localeCompare(pubB);
+        });
+    }
     
     renderApps(filtered);
 }
 
-async function handleDownload(link, appId) {
+function renderApps(apps) {
+    const list = document.getElementById('app-list');
+    
+    if (apps.length === 0) {
+        list.innerHTML = '<p style="width:100%; text-align:center; font-size:18px;">Програм не знайдено.</p>';
+        return;
+    }
+    
+    list.innerHTML = apps.map(app => `
+        <div class="app-card">
+            <img src="${app.icon_path ? app.icon_path : getIconUrl(app.icon_id)}" alt="${app.name}">
+            <h3>${app.name}</h3>
+            <span style="font-size: 13px; color: #777; margin-top: -10px; margin-bottom: 5px;">Від: ${app.publisher_name ? app.publisher_name : 'Невідомий'}</span>
+            <span style="font-size: 14px; color: #ff9800; font-weight: bold; margin-bottom: 10px;">⭐ ${parseFloat(app.avg_rating).toFixed(1)}</span>
+            <p>${app.description}</p>
+            <div class="price-tag">${app.price}₴</div>
+            <button class="btn-main" onclick="handleDownload(${app.id})">
+                Завантажити
+            </button>
+        </div>
+    `).join('');
+}
+
+async function fetchApps() {
+    try {
+        const res = await fetch('php/get_apps.php');
+        const text = await res.text();
+        allApps = JSON.parse(text);
+        filterApps();
+    } catch (e) {
+        console.error(e);
+        document.getElementById('app-list').innerHTML = '<p>Помилка скрипта. Натисни F12 і відкрий Console.</p>';
+    }
+}
+
+function handleDownload(appId) {
     if (isLoggedIn) {
-        const fd = new FormData();
-        fd.append('app_id', appId);
-        await fetch('php/record_download.php', { method: 'POST', body: fd });
-        window.open(link, '_blank');
+        window.location.href = `app.html?id=${appId}`;
     } else {
         openModal('loginModal');
     }
@@ -98,9 +136,9 @@ async function checkAuth() {
         const data = await res.json();
         const authMenu = document.getElementById('auth-menu');
         isLoggedIn = data.logged_in;
-
         if (data.logged_in) {
-            let publisherBtn = data.role === 'publisher' ? `<button class="btn-register" onclick="openModal('addAppModal')" style="margin-right:10px;">Додати програму</button>` : '';
+            let publisherBtn = data.role === 'publisher' ?
+                `<button class="btn-register" onclick="openModal('addAppModal')" style="margin-right:10px;">Додати програму</button>` : '';
             authMenu.innerHTML = `
                 ${publisherBtn}
                 <button class="btn-main" onclick="showHistory()" style="margin-right:10px;">Історія</button>
@@ -166,6 +204,7 @@ document.getElementById('registerForm').addEventListener('submit', async functio
             if (result.status === 'success') {
                 msgBox.style.color = 'green';
                 msgBox.textContent = result.message;
+                
                 setTimeout(() => {
                     closeModals();
                     this.reset();
@@ -177,7 +216,7 @@ document.getElementById('registerForm').addEventListener('submit', async functio
                 msgBox.textContent = result.message;
             }
         } catch (jsonError) {
-            console.error("Відповідь сервера:", textResponse);
+            console.error(textResponse);
             msgBox.textContent = "Помилка сервера. Натисни F12 та відкрий Console.";
         }
     } catch (networkError) {
@@ -240,7 +279,7 @@ document.getElementById('addAppForm').addEventListener('submit', function(e) {
                 cropper.destroy();
                 cropper = null;
             }
-            fetchApps(); 
+            fetchApps();
         }
     }, 'image/png');
 });
@@ -258,7 +297,8 @@ async function showHistory() {
     const uList = document.getElementById('uploads-list');
     const uSection = document.getElementById('publisher-uploads');
 
-    dList.innerHTML = data.downloads.map(d => `<li>${d.name} (${d.download_date})</li>`).join('') || '<li>Ще немає завантажень</li>';
+    dList.innerHTML = data.downloads.map(d => `<li>${d.name} (${d.download_date})</li>`).join('') ||
+        '<li>Ще немає завантажень</li>';
 
     if (data.uploads && data.uploads.length > 0) {
         uSection.style.display = 'block';

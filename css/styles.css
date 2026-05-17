@@ -222,18 +222,18 @@ button, .btn-login, .btn-register, .btn-logout, .btn-main, .modal-close {
     color: #900000;
 }
 
-.search-tab {
+.search-tab, .sort-tab, .order-tab {
     cursor: pointer;
     padding-bottom: 5px;
     border-bottom: 2px solid transparent;
     transition: color 0.3s ease, border-bottom-color 0.3s ease;
 }
 
-.search-tab:hover {
+.search-tab:hover, .sort-tab:hover, .order-tab:hover {
     color: #333;
 }
 
-.search-tab.active-tab {
+.search-tab.active-tab, .sort-tab.active-tab, .order-tab.active-tab {
     color: #007bff;
     border-bottom: 2px solid #007bff;
 }

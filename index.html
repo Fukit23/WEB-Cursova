@@ -41,7 +41,7 @@
 </header>
 
 <div style="text-align: center; margin: 20px 0; display: flex; flex-direction: column; align-items: center; gap: 15px;">
-    <div style="display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;">
+    <div style="display: flex; gap: 10px; justify-content: center;">
         <input type="text" id="searchInput" oninput="filterApps()" placeholder="Пошук..." style="padding: 10px; border-radius: 5px; font-size: 16px; border: 1px solid #ccc; width: 300px;">
         
         <select id="categoryFilter" onchange="filterApps()" style="padding: 10px; border-radius: 5px; font-size: 16px; border: 1px solid #ccc; cursor: pointer;">
@@ -54,10 +54,28 @@
         </select>
     </div>
     
-    <div id="searchTabs" style="display: flex; gap: 20px; font-size: 14px; font-weight: bold; color: #777;">
-        <span class="search-tab active-tab" onclick="setSearchScope('all')" data-scope="all">Скрізь</span>
-        <span class="search-tab" onclick="setSearchScope('name')" data-scope="name">За назвою</span>
-        <span class="search-tab" onclick="setSearchScope('publisher')" data-scope="publisher">За видавцем</span>
+    <div style="display: flex; gap: 30px; flex-wrap: wrap; justify-content: center; font-size: 14px; font-weight: bold; color: #777;">
+        <div style="display: flex; gap: 15px;">
+            <span style="color: #333;">Шукати:</span>
+            <span class="search-tab active-tab" onclick="setSearchScope('all')" data-scope="all">Скрізь</span>
+            <span class="search-tab" onclick="setSearchScope('name')" data-scope="name">За назвою</span>
+            <span class="search-tab" onclick="setSearchScope('publisher')" data-scope="publisher">За видавцем</span>
+        </div>
+        
+        <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+            <span style="color: #333;">Сортувати:</span>
+            <span class="sort-tab active-tab" onclick="setSortBy('date')" data-sort="date">За датою</span>
+            <span class="sort-tab" onclick="setSortBy('rating')" data-sort="rating">За рейтингом</span>
+            <span class="sort-tab" onclick="setSortBy('name')" data-sort="name">За назвою</span>
+            <span class="sort-tab" onclick="setSortBy('publisher')" data-sort="publisher">За видавцем</span>
+            <span class="sort-tab" onclick="setSortBy('price')" data-sort="price">За ціною</span>
+        </div>
+    </div>
+
+    <div id="orderRow" style="display: flex; gap: 15px; font-size: 14px; font-weight: bold; color: #777; justify-content: center;">
+        <span style="color: #333;">Порядок:</span>
+        <span class="order-tab active-tab" onclick="setSortOrder('desc')" data-order="desc">За спаданням</span>
+        <span class="order-tab" onclick="setSortOrder('asc')" data-order="asc">За зростанням</span>
     </div>
 </div>
 

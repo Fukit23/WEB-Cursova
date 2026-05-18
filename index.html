@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>App Store</title>
-    <link rel="stylesheet" href="css/styles.css?v=3">
+    <link rel="stylesheet" href="css/styles.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" rel="stylesheet">
     <style>
         .modal {
@@ -110,53 +110,6 @@
     <div id="reg_message" style="margin-top:10px;"></div>
 </div>
 
-<div class="modal" id="addAppModal">
-    <div class="modal-close" onclick="closeModals()">✖</div>
-    <h2>Додати програму</h2>
-    <div id="crop_container" style="display:none; text-align:center; margin-bottom:15px;">
-        <img id="image_preview" style="max-width:100%; max-height:300px;">
-    </div>
-    <form id="addAppForm">
-        <input type="text" id="add_name" placeholder="Назва програми" required>
-        <textarea id="add_description" placeholder="Опис" required style="width: 100%; margin-bottom: 10px; padding: 8px; box-sizing: border-box;"></textarea>
-        <input type="text" id="add_version" placeholder="Версія (наприклад, 1.0.0)" required>
-        <input type="number" step="0.01" id="add_price" placeholder="Ціна (₴)" required>
-        <select id="add_age" required>
-            <option value="0+">Вік: 0+</option>
-            <option value="12+">Вік: 12+</option>
-            <option value="16+">Вік: 16+</option>
-            <option value="18+">Вік: 18+</option>
-        </select>
-        <select id="add_category" required>
-            <option value="Games">Ігри</option>
-            <option value="Tools">Утиліти</option>
-            <option value="Education">Освіта</option>
-            <option value="Productivity">Продуктивність</option>
-            <option value="Lifestyle">Стиль життя</option>
-        </select>
-        </select>
-        <label>Іконка програми:</label>
-        <input type="file" id="add_icon" accept="image/*" required>
-        <label>Файл програми:</label>
-        <input type="file" id="add_app_file" required>
-        <button type="submit">Опублікувати</button>
-    </form>
-</div>
-
-<div class="modal" id="historyModal">
-    <div class="modal-close" onclick="closeModals()">✖</div>
-    <h2>Історія</h2>
-    <div id="history-content">
-        <div id="user-downloads">
-            <h3>Ваші завантаження</h3>
-            <ul id="downloads-list"></ul>
-        </div>
-        <div id="publisher-uploads" style="display:none; margin-top:20px;">
-            <h3>Ваші опубліковані програми</h3>
-            <ul id="uploads-list"></ul>
-        </div>
-    </div>
-</div>
 
 <div class="modal" id="walletModal">
     <div class="modal-close" onclick="closeModals()">✖</div>
@@ -169,32 +122,6 @@
         </div>
         <input type="number" step="0.01" min="1" id="topup_amount" placeholder="Введіть суму" required>
         <button type="submit">Поповнити</button>
-    </form>
-</div>
-
-<div class="modal" id="editAppModal">
-    <div class="modal-close" onclick="closeModals()">✖</div>
-    <h2>Редагувати програму</h2>
-    <form id="editAppForm">
-        <input type="hidden" id="edit_app_id">
-        <input type="text" id="edit_name" placeholder="Назва програми" required>
-        <textarea id="edit_description" placeholder="Опис" required style="width: 100%; margin-bottom: 10px; padding: 8px; box-sizing: border-box;"></textarea>
-        <input type="number" step="0.01" id="edit_price" placeholder="Ціна (₴)" required>
-        <select id="edit_age" required>
-            <option value="0+">Вік: 0+</option>
-            <option value="12+">Вік: 12+</option>
-            <option value="16+">Вік: 16+</option>
-            <option value="18+">Вік: 18+</option>
-        </select>
-        <select id="edit_category" required>
-            <option value="Games">Ігри</option>
-            <option value="Tools">Утиліти</option>
-            <option value="Education">Освіта</option>
-            <option value="Productivity">Продуктивність</option>
-            <option value="Lifestyle">Стиль життя</option>
-        </select>
-        </select>
-        <button type="submit">Зберегти зміни</button>
     </form>
 </div>
 

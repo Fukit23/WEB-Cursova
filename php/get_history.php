@@ -2,24 +2,26 @@
 session_start();
 header('Content-Type: application/json');
 
-if (!isset($_SESSION['user_id'])) exit;
+if (!isset($_SESSION['user_id'])) {
+    echo json_encode(['downloads' => [], 'uploads' => []]);
+    exit;
+}
 
 $conn = new mysqli('localhost', 'root', 'mishkaumka2006', 'app_store_db');
-$user_id = $_SESSION['user_id'];
+$uid = $_SESSION['user_id'];
 
-$d_sql = "SELECT a.name, a.icon_path, d.download_date FROM downloads d JOIN apps a ON d.app_id = a.id WHERE d.user_id = ? ORDER BY d.download_date DESC";
-$stmt = $conn->prepare($d_sql);
-$stmt->bind_param("i", $user_id);
-$stmt->execute();
-$downloads = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+$d_res = $conn->query("SELECT a.name, d.download_date FROM downloads d JOIN apps a ON d.app_id = a.id WHERE d.user_id = $uid ORDER BY d.id DESC");
+$downloads = $d_res->fetch_all(MYSQLI_ASSOC);
 
 $uploads = [];
 if ($_SESSION['role'] === 'publisher') {
-    $u_sql = "SELECT name, icon_path, id FROM apps WHERE publisher_id = ?";
-    $stmt2 = $conn->prepare($u_sql);
-    $stmt2->bind_param("i", $user_id);
-    $stmt2->execute();
-    $uploads = $stmt2->get_result()->fetch_all(MYSQLI_ASSOC);
+    $u_res = $conn->query("SELECT id, name, description, age_category, category FROM apps WHERE publisher_id = $uid ORDER BY id DESC");
+    while ($app = $u_res->fetch_assoc()) {
+        $aid = $app['id'];
+        $v_res = $conn->query("SELECT id, type, price, created_at FROM versions WHERE app_id = $aid ORDER BY id DESC");
+        $app['versions'] = $v_res->fetch_all(MYSQLI_ASSOC);
+        $uploads[] = $app;
+    }
 }
 
 echo json_encode(['downloads' => $downloads, 'uploads' => $uploads]);

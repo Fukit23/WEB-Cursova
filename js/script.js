@@ -1,4 +1,3 @@
-let cropper = null;
 let isLoggedIn = false;
 let allApps = [];
 let currentSearchScope = 'all';
@@ -104,7 +103,7 @@ function renderApps(apps) {
             <p>${app.description}</p>
             <div class="price-tag">${app.price}₴</div>
             <button class="btn-main" onclick="handleDownload(${app.id})">
-                Завантажити
+                Переглянути
             </button>
         </div>
     `).join('');
@@ -123,11 +122,7 @@ async function fetchApps() {
 }
 
 function handleDownload(appId) {
-    if (isLoggedIn) {
-        window.location.href = `app.html?id=${appId}`;
-    } else {
-        openModal('loginModal');
-    }
+    window.location.href = `app.html?id=${appId}`;
 }
 
 async function checkAuth() {
@@ -137,13 +132,9 @@ async function checkAuth() {
         const authMenu = document.getElementById('auth-menu');
         isLoggedIn = data.logged_in;
         if (data.logged_in) {
-            let publisherBtn = data.role === 'publisher' ?
-                `<button class="btn-register" onclick="openModal('addAppModal')" style="margin-right:10px;">Додати програму</button>` : '';
             authMenu.innerHTML = `
-                ${publisherBtn}
                 <button class="btn-register" onclick="openModal('walletModal')" style="margin-right:10px; background-color: #ff9800;">Баланс: ${parseFloat(data.balance).toFixed(2)} ₴</button>
-                <button class="btn-main" onclick="showHistory()" style="margin-right:10px;">Історія</button>
-                <a href="#">${data.username}</a>
+                <button class="btn-main" onclick="window.location.href='profile.html'" style="margin-right:10px;">Кабінет (${data.username})</button>
                 <button class="btn-logout" onclick="window.location.href='php/logout.php'">Вийти</button>
             `;
         } else {
@@ -165,7 +156,7 @@ function closeModals() {
     document.querySelectorAll('.modal').forEach(m => m.classList.remove('active'));
 }
 
-document.getElementById('loginForm').addEventListener('submit', async function(e) {
+document.getElementById('loginForm')?.addEventListener('submit', async function(e) {
     e.preventDefault();
     const formData = new FormData();
     formData.append('email', document.getElementById('log_email').value);
@@ -182,7 +173,7 @@ document.getElementById('loginForm').addEventListener('submit', async function(e
     }
 });
 
-document.getElementById('registerForm').addEventListener('submit', async function(e) {
+document.getElementById('registerForm')?.addEventListener('submit', async function(e) {
     e.preventDefault();
     
     const msgBox = document.getElementById('reg_message');
@@ -225,151 +216,7 @@ document.getElementById('registerForm').addEventListener('submit', async functio
     }
 });
 
-document.getElementById('add_icon').addEventListener('change', function(e) {
-    const file = e.target.files[0];
-    if (file) {
-        const url = URL.createObjectURL(file);
-        const imagePreview = document.getElementById('image_preview');
-        const cropContainer = document.getElementById('crop_container');
-
-        imagePreview.src = url;
-        cropContainer.style.display = 'block';
-
-        if (cropper) {
-            cropper.destroy();
-        }
-
-        cropper = new Cropper(imagePreview, {
-            aspectRatio: 1,
-            viewMode: 1,
-            autoCropArea: 1,
-        });
-    }
-});
-
-document.getElementById('addAppForm').addEventListener('submit', function(e) {
-    e.preventDefault();
-
-    if (!cropper) return;
-
-    const formElement = this;
-
-    cropper.getCroppedCanvas({
-        width: 256,
-        height: 256
-    }).toBlob(async function(blob) {
-        const formData = new FormData();
-        formData.append('name', document.getElementById('add_name').value);
-        formData.append('description', document.getElementById('add_description').value);
-        formData.append('price', document.getElementById('add_price').value);
-        formData.append('age_category', document.getElementById('add_age').value);
-        formData.append('category', document.getElementById('add_category').value);
-        formData.append('version', document.getElementById('add_version').value);
-
-        formData.append('icon', blob, 'icon.png');
-        formData.append('app_file', document.getElementById('add_app_file').files[0]);
-
-        const res = await fetch('php/add_app.php', { method: 'POST', body: formData });
-        const result = await res.json();
-
-        if (result.status === 'success') {
-            closeModals();
-            formElement.reset();
-            document.getElementById('crop_container').style.display = 'none';
-            if (cropper) {
-                cropper.destroy();
-                cropper = null;
-            }
-            fetchApps();
-        }
-    }, 'image/png');
-});
-
-document.addEventListener('DOMContentLoaded', () => {
-    fetchApps();
-    checkAuth();
-});
-
-async function showHistory() {
-    const res = await fetch('php/get_history.php');
-    const data = await res.json();
-    
-    const dList = document.getElementById('downloads-list');
-    const uList = document.getElementById('uploads-list');
-    const uSection = document.getElementById('publisher-uploads');
-
-    dList.innerHTML = data.downloads.map(d => `<li>${d.name} (${d.download_date})</li>`).join('') ||
-        '<li>Ще немає завантажень</li>';
-
-    if (data.uploads && data.uploads.length > 0) {
-        uSection.style.display = 'block';
-        uList.innerHTML = data.uploads.map(u => `
-            <li style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; padding-bottom:5px; border-bottom:1px solid #ccc;">
-                <span>${u.name}</span>
-                <div>
-                    <button class="btn-main" onclick="openEditModal(${u.id})" style="padding:5px 10px; font-size:12px; margin-right:5px;">Редагувати</button>
-                    <button class="btn-logout" onclick="deleteApp(${u.id})" style="padding:5px 10px; font-size:12px;">Видалити</button>
-                </div>
-            </li>
-        `).join('');
-    } else {
-        uSection.style.display = 'none';
-    }
-
-    openModal('historyModal');
-}
-
-function openEditModal(id) {
-    const app = allApps.find(a => a.id == id);
-    if (!app) return;
-    
-    document.getElementById('edit_app_id').value = app.id;
-    document.getElementById('edit_name').value = app.name;
-    document.getElementById('edit_description').value = app.description;
-    document.getElementById('edit_price').value = app.price;
-    document.getElementById('edit_age').value = app.age_category;
-    document.getElementById('edit_category').value = app.category;
-    
-    closeModals();
-    openModal('editAppModal');
-}
-
-async function deleteApp(id) {
-    if (!confirm('Ви дійсно хочете видалити цю програму?')) return;
-    const fd = new FormData();
-    fd.append('id', id);
-    await fetch('php/delete_app.php', { method: 'POST', body: fd });
-    await fetchApps();
-    showHistory();
-}
-
-document.getElementById('editAppForm').addEventListener('submit', async function(e) {
-    e.preventDefault();
-    const fd = new FormData();
-    fd.append('id', document.getElementById('edit_app_id').value);
-    fd.append('name', document.getElementById('edit_name').value);
-    fd.append('description', document.getElementById('edit_description').value);
-    fd.append('price', document.getElementById('edit_price').value);
-    fd.append('age_category', document.getElementById('edit_age').value);
-    fd.append('category', document.getElementById('edit_category').value);
-
-    try {
-        const res = await fetch('php/edit_app.php', { method: 'POST', body: fd });
-        const data = await res.json();
-        
-        if (data.status === 'success') {
-            closeModals();
-            await fetchApps();
-            showHistory();
-        } else {
-            alert('Помилка збереження: ' + data.message);
-        }
-    } catch (err) {
-        alert('Помилка сервера. Відкрий консоль (F12).');
-    }
-});
-
-document.getElementById('walletForm').addEventListener('submit', async function(e) {
+document.getElementById('walletForm')?.addEventListener('submit', async function(e) {
     e.preventDefault();
     const fd = new FormData();
     fd.append('amount', document.getElementById('topup_amount').value);
@@ -384,4 +231,9 @@ document.getElementById('walletForm').addEventListener('submit', async function(
             checkAuth();
         }
     } catch (err) {}
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+    fetchApps();
+    checkAuth();
 });

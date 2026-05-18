@@ -25,23 +25,34 @@ async function loadAppDetails() {
     
     if (v) {
         const p = parseFloat(v.price);
-        if (p <= 0 || data.has_purchased) {
+        if (!data.logged_in) {
+            html += `<button class="btn-main" style="width: 250px; font-size: 16px; background-color: #6c757d;" onclick="alert('Будь ласка, увійдіть в акаунт, щоб завантажити програму.')">Увійдіть для завантаження</button>`;
+        } else if (p <= 0 || data.has_purchased) {
             html += `<button class="btn-main" style="width: 250px; font-size: 16px;" onclick="downloadFile('${v.download_link}', ${appId})">Завантажити (${v.type})</button>`;
         } else {
             html += `<button class="btn-register" style="width: 250px; font-size: 16px; background-color: #28a745;" onclick="buyApp(${appId})">Придбати за ${p}₴</button>`;
         }
     }
     
-    html += `<h3 style="margin-top: 30px;">Історія версій</h3><ul>`;
+    html += `
+        <details style="margin-top: 30px; background: #f9f9f9; padding: 15px; border-radius: 5px; border: 1px solid #eee; cursor: pointer;">
+            <summary style="font-size: 18px; font-weight: bold; outline: none;">Історія версій</summary>
+            <ul style="margin-top: 15px; padding-left: 20px;">
+    `;
     data.versions.forEach(ver => {
         const vp = parseFloat(ver.price);
-        html += `<li style="margin-bottom: 10px;">Версія: <strong>${ver.type}</strong> | Ціна: ${vp}₴ `;
-        if (vp <= 0 || data.has_purchased) {
-            html += `<button class="btn-login" style="padding: 5px 10px; font-size: 12px; margin-left: 10px;" onclick="downloadFile('${ver.download_link}', ${appId})">Завантажити</button>`;
+        const vDate = ver.created_at ? ver.created_at.substring(0, 10) : 'Невідомо';
+        html += `<li style="margin-bottom: 10px;">Версія: <strong>${ver.type}</strong> | Дата: ${vDate} `;
+        
+        if (data.logged_in) {
+            if (vp <= 0 || data.has_purchased) {
+                html += `<button class="btn-login" style="padding: 5px 10px; font-size: 12px; margin-left: 10px;" onclick="downloadFile('${ver.download_link}', ${appId})">Завантажити</button>`;
+            }
         }
+        
         html += `</li>`;
     });
-    html += `</ul>`;
+    html += `</ul></details>`;
     
     html += `<h3 style="margin-top: 30px;">Відгуки та оцінки</h3>`;
     if (data.logged_in) {
@@ -59,7 +70,7 @@ async function loadAppDetails() {
             </div>
         `;
     } else {
-        html += `<p style="color: red;">Лише авторизовані користувачі можуть залишати відгуки.</p>`;
+        html += `<p style="color: red;">Лише авторизовані користувачі можуть залишати відгуки та завантажувати програми.</p>`;
     }
     
     if (data.reviews.length === 0) {

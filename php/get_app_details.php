@@ -3,21 +3,10 @@ session_start();
 header('Content-Type: application/json');
 
 $conn = new mysqli('localhost', 'root', 'mishkaumka2006', 'app_store_db');
-
-if ($conn->connect_error) {
-    echo json_encode(['error' => 'DB connection failed']);
-    exit;
-}
-
 $id = $_GET['id'] ?? 0;
+$uid = $_SESSION['user_id'] ?? 0;
 
-$appQuery = "
-    SELECT a.*, u.username as publisher_name,
-           (SELECT COALESCE(AVG(rating), 0) FROM reviews WHERE app_id = a.id) as avg_rating
-    FROM apps a
-    LEFT JOIN users u ON a.publisher_id = u.id
-    WHERE a.id = ?
-";
+$appQuery = "SELECT a.*, u.username as publisher_name, (SELECT COALESCE(AVG(rating), 0) FROM reviews WHERE app_id = a.id) as avg_rating FROM apps a LEFT JOIN users u ON a.publisher_id = u.id WHERE a.id = ?";
 $stmt1 = $conn->prepare($appQuery);
 $stmt1->bind_param("i", $id);
 $stmt1->execute();
@@ -35,6 +24,16 @@ $stmt3->bind_param("i", $id);
 $stmt3->execute();
 $reviews = $stmt3->get_result()->fetch_all(MYSQLI_ASSOC);
 
-echo json_encode(['app' => $app, 'versions' => $versions, 'reviews' => $reviews, 'logged_in' => isset($_SESSION['user_id'])]);
+$has_purchased = false;
+if ($uid > 0) {
+    $stmt4 = $conn->prepare("SELECT id FROM purchases WHERE user_id = ? AND app_id = ?");
+    $stmt4->bind_param("ii", $uid, $id);
+    $stmt4->execute();
+    if ($stmt4->get_result()->num_rows > 0) {
+        $has_purchased = true;
+    }
+}
+
+echo json_encode(['app' => $app, 'versions' => $versions, 'reviews' => $reviews, 'logged_in' => $uid > 0, 'has_purchased' => $has_purchased]);
 $conn->close();
 ?>

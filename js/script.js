@@ -141,6 +141,7 @@ async function checkAuth() {
                 `<button class="btn-register" onclick="openModal('addAppModal')" style="margin-right:10px;">Додати програму</button>` : '';
             authMenu.innerHTML = `
                 ${publisherBtn}
+                <button class="btn-register" onclick="openModal('walletModal')" style="margin-right:10px; background-color: #ff9800;">Баланс: ${parseFloat(data.balance).toFixed(2)} ₴</button>
                 <button class="btn-main" onclick="showHistory()" style="margin-right:10px;">Історія</button>
                 <a href="#">${data.username}</a>
                 <button class="btn-logout" onclick="window.location.href='php/logout.php'">Вийти</button>
@@ -366,4 +367,21 @@ document.getElementById('editAppForm').addEventListener('submit', async function
     } catch (err) {
         alert('Помилка сервера. Відкрий консоль (F12).');
     }
+});
+
+document.getElementById('walletForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const fd = new FormData();
+    fd.append('amount', document.getElementById('topup_amount').value);
+
+    try {
+        const res = await fetch('php/topup.php', { method: 'POST', body: fd });
+        const data = await res.json();
+        
+        if (data.status === 'success') {
+            closeModals();
+            this.reset();
+            checkAuth();
+        }
+    } catch (err) {}
 });

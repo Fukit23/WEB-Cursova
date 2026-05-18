@@ -7,7 +7,7 @@ async function loadAppDetails() {
     
     const container = document.getElementById('app-container');
     const iconSrc = data.app.icon_path ? data.app.icon_path : `https://picsum.photos/id/${data.app.icon_id}/80/80`;
-    const latestVersion = data.versions[0];
+    const v = data.versions[0];
     
     let html = `
         <div style="display: flex; gap: 20px; align-items: center; border-bottom: 1px solid #eee; padding-bottom: 20px; margin-bottom: 20px;">
@@ -20,22 +20,30 @@ async function loadAppDetails() {
         </div>
         <h3>Опис</h3>
         <p style="line-height: 1.6;">${data.app.description}</p>
-        
-        <h3 style="margin-top: 20px;">Завантажити</h3>
+        <h3 style="margin-top: 20px;">Остання версія</h3>
     `;
     
-    if (latestVersion) {
-        html += `<button class="btn-main" style="width: 250px; font-size: 16px;" onclick="downloadFile('${latestVersion.download_link}', ${appId})">Остання версія (${latestVersion.type}) - ${latestVersion.price}₴</button>`;
+    if (v) {
+        const p = parseFloat(v.price);
+        if (p <= 0 || data.has_purchased) {
+            html += `<button class="btn-main" style="width: 250px; font-size: 16px;" onclick="downloadFile('${v.download_link}', ${appId})">Завантажити (${v.type})</button>`;
+        } else {
+            html += `<button class="btn-register" style="width: 250px; font-size: 16px; background-color: #28a745;" onclick="buyApp(${appId})">Придбати за ${p}₴</button>`;
+        }
     }
     
     html += `<h3 style="margin-top: 30px;">Історія версій</h3><ul>`;
-    data.versions.forEach(v => {
-        html += `<li style="margin-bottom: 10px;">Версія: <strong>${v.type}</strong> | Ціна: ${v.price}₴ <button class="btn-login" style="padding: 5px 10px; font-size: 12px; margin-left: 10px;" onclick="downloadFile('${v.download_link}', ${appId})">Завантажити</button></li>`;
+    data.versions.forEach(ver => {
+        const vp = parseFloat(ver.price);
+        html += `<li style="margin-bottom: 10px;">Версія: <strong>${ver.type}</strong> | Ціна: ${vp}₴ `;
+        if (vp <= 0 || data.has_purchased) {
+            html += `<button class="btn-login" style="padding: 5px 10px; font-size: 12px; margin-left: 10px;" onclick="downloadFile('${ver.download_link}', ${appId})">Завантажити</button>`;
+        }
+        html += `</li>`;
     });
     html += `</ul>`;
     
     html += `<h3 style="margin-top: 30px;">Відгуки та оцінки</h3>`;
-    
     if (data.logged_in) {
         html += `
             <div style="margin-bottom: 20px; background: #f9f9f9; padding: 15px; border-radius: 5px;">
@@ -68,6 +76,23 @@ async function loadAppDetails() {
     }
     
     container.innerHTML = html;
+}
+
+async function buyApp(id) {
+    const fd = new FormData();
+    fd.append('app_id', id);
+    
+    const res = await fetch('php/buy_app.php', { method: 'POST', body: fd });
+    const data = await res.json();
+    
+    if (data.status === 'success') {
+        alert('Покупка успішна!');
+        loadAppDetails();
+    } else if (data.msg === 'no_money') {
+        alert('Недостатньо коштів на балансі!');
+    } else {
+        alert('Потрібно увійти в акаунт.');
+    }
 }
 
 async function submitReview() {
